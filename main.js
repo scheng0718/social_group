@@ -30,7 +30,9 @@ function renderPeopleList(data) {
     }
   })
 }
-function renderModalInfo(id) {
+function renderModalInfo(event) {
+  console.log(event.target)
+  const id = event.target.dataset.id
   const showURL = INDEX_URL + id
   const modalImg = document.querySelector('#friends-modal-image')
   const modalIntro = document.querySelector('#friends-modal-intro') 
@@ -53,11 +55,7 @@ function renderModalInfo(id) {
     })
 }
 
-dataPanel.addEventListener('click', function oneClicked(event){
-  console.log(event.target.dataset.id)
-  const id = event.target.dataset.id
-  renderModalInfo(id)
-})
+dataPanel.addEventListener('click', renderModalInfo)
 // Get API data
 axios.get(INDEX_URL)
   .then(response => {
