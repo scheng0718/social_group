@@ -1,6 +1,8 @@
 const BASE_URL = 'https://user-list.alphacamp.io'
 const INDEX_URL = BASE_URL + '/api/v1/users/'
 const dataPanel = document.querySelector('#data-panel')
+const searchForm = document.querySelector('#search-form')
+const searchInput = document.querySelector('#search-input')
 const friends = []
 
 // Render friends information
@@ -54,12 +56,23 @@ function renderModalInfo(event) {
       `
     })
 }
-
+// search features
+searchForm.addEventListener('submit', function searchFromSubmitted(event) {
+  event.preventDefault();
+  const input = searchInput.value.trim().toLowerCase()
+  const filteredList = friends.filter(friend => friend.name.toLowerCase().includes(input) || friend.surname.toLowerCase().includes(input))
+  if (filteredList.length === 0) {
+    alert(`The friend ${input} is not existing`)
+    renderPeopleList(friends)
+  }
+  renderPeopleList(filteredList)  
+})
 dataPanel.addEventListener('click', renderModalInfo)
 // Get API data
 axios.get(INDEX_URL)
   .then(response => {
     const data = response.data.results
     friends.push(...data)
+    console.log(friends)
     renderPeopleList(friends)
   })
