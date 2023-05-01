@@ -3,11 +3,14 @@ const INDEX_URL = BASE_URL + '/api/v1/users/'
 const dataPanel = document.querySelector('#data-panel')
 const searchForm = document.querySelector('#search-form')
 const searchInput = document.querySelector('#search-input')
-const friends = []
+const friends = JSON.parse(localStorage.getItem('closeFriends'))
 
 // Render friends information
 function renderPeopleList(data) {
   let rawHTML = ''
+  if (!data || data.length === 0) {
+    return dataPanel.innerHTML = rawHTML
+  }
   data.forEach(item => {
     const id = item.id
     rawHTML += `
@@ -22,15 +25,13 @@ function renderPeopleList(data) {
                 <button type="button" class="btn btn-warning btn-show-more mx-2" data-bs-toggle="modal" data-bs-target="#friends-modal-message" data-id="${id}">
                   Learn More
                 </button> 
-                <button type="button" class="btn btn-light btn-add-friend mx-2" data-id="${id}">Add Friend</button>            
+                <button type="button" class="btn btn-danger btn-remove-friend mx-2" data-id="${id}">Remove</button>            
               </div>
             </div>
           </div>
         </div>
     `
-    if (id !== 200) {
-      dataPanel.innerHTML = rawHTML
-    }
+    dataPanel.innerHTML = rawHTML
   })
 }
 function renderModalInfo(event) {
@@ -57,41 +58,24 @@ function renderModalInfo(event) {
       `
     })
 }
-function addToFriend(id) {
-  // console.log(id)
-  const list = JSON.parse(localStorage.getItem('closeFriends') || [])
-  const closeFriend = friends.find(friend => friend.id === id)
-  if (list.some(friend => friend.id === id)) {
-    return alert('This friend has been added already')
+function removeFriend(id) {
+  if (!friends || friends.length === 0) {
+    return
   }
-  list.push(closeFriend)
-  localStorage.setItem('closeFriends', JSON.stringify(list))
+  const index = friends.findIndex(friend => friend.id === id)
+  if (index === -1) {
+    return
+  }
+  friends.splice(index, 1)
+  localStorage.setItem('closeFriends', JSON.stringify(friends))
+  renderPeopleList(friends)
 }
-// search features
-searchForm.addEventListener('submit', function searchFromSubmitted(event) {
-  event.preventDefault();
-  const input = searchInput.value.trim().toLowerCase()
-  const filteredList = friends.filter(friend => friend.name.toLowerCase().includes(input) || friend.surname.toLowerCase().includes(input))
-  if (filteredList.length === 0) {
-    alert(`The friend ${input} is not existing`)
-    renderPeopleList(friends)
-  }
-  renderPeopleList(filteredList)  
-})
 
 dataPanel.addEventListener('click', function onPanelCLicked(event) {
   if (event.target.matches('.btn-show-more')) {
     renderModalInfo(event) 
-  } else if (event.target.matches('.btn-add-friend')) {
-    addToFriend(Number(event.target.dataset.id))
-  }  
+  } else if (event.target.matches('.btn-remove-friend')) {
+    removeFriend(Number(event.target.dataset.id))
+  }
 })
-
-// Get API data
-axios.get(INDEX_URL)
-  .then(response => {
-    const data = response.data.results
-    friends.push(...data)
-    console.log(friends)
-    renderPeopleList(friends)
-})
+renderPeopleList(friends)
