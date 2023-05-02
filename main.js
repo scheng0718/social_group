@@ -6,6 +6,7 @@ const dataPanel = document.querySelector('#data-panel')
 const searchForm = document.querySelector('#search-form')
 const searchInput = document.querySelector('#search-input')
 const totalPage = document.querySelector('#total-page')
+const followButton = document.querySelector('#follow-btn')
 const friends = []
 let filteredList = []
 let countries = []
@@ -148,14 +149,17 @@ dataPanel.addEventListener('click', function onPanelCLicked(event) {
     renderModalInfo(event) 
   } else if (event.target.matches('.fa-regular')) {
     event.target.classList.replace('fa-regular', 'fa-solid')
+    event.target.nextElementSibling.nextElementSibling.lastElementChild.textContent = 'Following'
     addToFriend(Number(event.target.dataset.id))
   } else if (event.target.matches('.fa-solid')) {
     event.target.classList.replace('fa-solid', 'fa-regular')
+    event.target.nextElementSibling.nextElementSibling.lastElementChild.textContent = 'Follow'
     removeFromList(Number(event.target.dataset.id))
   } else if (event.target.matches('.btn-add-friend')) {
     const id = Number(event.target.dataset.id)
     const icon = document.getElementById("heart" + id)
     icon.classList.replace('fa-regular', 'fa-solid')
+    event.target.textContent = 'Following'
     addToFriend(id)
   }
 })
