@@ -28,33 +28,59 @@ function getFriendByPage(page) {
   const friendsByPage = data.slice((page - 1) * FRIENDS_PER_PAGE, page * FRIENDS_PER_PAGE)
   return friendsByPage
 }
-
+function isExistInFriendList(id) {
+  const friendList = JSON.parse(localStorage.getItem('closeFriends')) || []
+  const friend = friendList.find(friend => friend.id === id)
+  return friend === undefined ? false : true
+}
 // Render friends information
 function renderPeopleList(data) {
   let rawHTML = ''
   data.forEach(item => {
-    const id = item.id
-    rawHTML += `
-      <div class="col-sm-3">
-          <div class="mb-2">
-            <div class="card text-white bg-dark text-center">
-              <img src="${item.avatar}" class="card-img-top" alt="avatar">
-              <div class="card-body text-center">
-                <h5 class="card-title">${item.name}<br>${item.surname}</h5>
-                <p class="card-subtitle"><i class="fa-solid fa-flag fa-sm mx-2" style="color: #008000;"></i>${item.region}</p>
-                <p class="card-text"><i class="fa-solid fa-person-half-dress fa-lg mx-2" style="color: #f2c94c;"></i>${item.gender}</p>
-                <button type="button" class="btn btn-warning btn-show-more mx-2" data-bs-toggle="modal" data-bs-target="#friends-modal-message" data-id="${id}">
-                  Learn More
-                </button> 
-                <button type="button" class="btn btn-light btn-add-friend mx-2" data-id="${id}">Add Friend</button>            
+    const id = Number(item.id)
+    if (isExistInFriendList(id)) {
+      rawHTML += `
+        <div class="col-sm-3">
+            <div class="mb-2">
+              <div class="card text-white bg-dark text-center">
+                <i class="fa-solid fa-heart fa-2xl" id="heart${id}" data-id="${id}" style="color: #dc143c;"></i>
+                <img src="${item.avatar}" class="card-img-top" alt="avatar">
+                <div class="card-body text-center">
+                  <h5 class="card-title">${item.name}<br>${item.surname}</h5>
+                  <p class="card-subtitle"><i class="fa-solid fa-flag fa-sm mx-2" style="color: #008000;"></i>${item.region}</p>
+                  <p class="card-text"><i class="fa-solid fa-person-half-dress fa-lg mx-2" style="color: #f2c94c;"></i>${item.gender}</p>
+                  <button type="button" class="btn btn-warning btn-show-more mx-2" data-bs-toggle="modal" data-bs-target="#friends-modal-message" data-id="${id}">
+                    About me
+                  </button> 
+                  <button type="button" class="btn btn-light btn-add-friend mx-2" data-id="${id}">Follow</button>            
+                </div>
               </div>
             </div>
           </div>
-        </div>
-    `
-    if (id !== 200) {
-      dataPanel.innerHTML = rawHTML
+      `
+    } else {
+      rawHTML += `
+        <div class="col-sm-3">
+            <div class="mb-2">
+              <div class="card text-white bg-dark text-center">
+                <i class="fa-regular fa-heart fa-2xl" id="heart${id}" data-id="${id}" style="color: #dc143c;"></i>
+                <img src="${item.avatar}" class="card-img-top" alt="avatar">
+                <div class="card-body text-center">
+                  <h5 class="card-title">${item.name}<br>${item.surname}</h5>
+                  <p class="card-subtitle"><i class="fa-solid fa-flag fa-sm mx-2" style="color: #008000;"></i>${item.region}</p>
+                  <p class="card-text"><i class="fa-solid fa-person-half-dress fa-lg mx-2" style="color: #f2c94c;"></i>${item.gender}</p>
+                  <button type="button" class="btn btn-warning btn-show-more mx-2" data-bs-toggle="modal" data-bs-target="#friends-modal-message" data-id="${id}">
+                    About me
+                  </button> 
+                  <button type="button" class="btn btn-light btn-add-friend mx-2" data-id="${id}">Follow</button>            
+                </div>
+              </div>
+            </div>
+          </div>
+      `
     }
+    
+    dataPanel.innerHTML = rawHTML   
   })
 }
 function renderModalInfo(event) {
@@ -83,13 +109,19 @@ function renderModalInfo(event) {
 }
 function addToFriend(id) {
   // console.log(id)
-  const list = JSON.parse(localStorage.getItem('closeFriends') || [])
+  const friendList = JSON.parse(localStorage.getItem('closeFriends') || [])
   const closeFriend = friends.find(friend => friend.id === id)
-  if (list.some(friend => friend.id === id)) {
+  if (friendList.some(friend => friend.id === id)) {
     return alert('This friend has been added already')
   }
-  list.push(closeFriend)
-  localStorage.setItem('closeFriends', JSON.stringify(list))
+  friendList.push(closeFriend)
+  localStorage.setItem('closeFriends', JSON.stringify(friendList))
+}
+function removeFromList(id) {
+  const friendList = JSON.parse(localStorage.getItem('closeFriends'))
+  const index = friendList.findIndex(friend => friend.id === id)
+  friendList.splice(index, 1)
+  localStorage.setItem('closeFriends', JSON.stringify(friendList))
 }
 // search features
 searchForm.addEventListener('submit', function searchFromSubmitted(event) {
@@ -107,9 +139,18 @@ searchForm.addEventListener('submit', function searchFromSubmitted(event) {
 dataPanel.addEventListener('click', function onPanelCLicked(event) {
   if (event.target.matches('.btn-show-more')) {
     renderModalInfo(event) 
-  } else if (event.target.matches('.btn-add-friend')) {
+  } else if (event.target.matches('.fa-regular')) {
+    event.target.classList.replace('fa-regular', 'fa-solid')
     addToFriend(Number(event.target.dataset.id))
-  }  
+  } else if (event.target.matches('.fa-solid')) {
+    event.target.classList.replace('fa-solid', 'fa-regular')
+    removeFromList(Number(event.target.dataset.id))
+  } else if (event.target.matches('.btn-add-friend')) {
+    const id = Number(event.target.dataset.id)
+    const icon = document.getElementById("heart" + id)
+    icon.classList.replace('fa-regular', 'fa-solid')
+    addToFriend(id)
+  }
 })
 
 totalPage.addEventListener('click', function (event) {

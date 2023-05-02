@@ -18,3 +18,9 @@ body {
   color: #006400;
   font-weight: bolder;
 }
+.fa-heart {
+  position: absolute;
+  z-index: 1;
+  top: 5%;
+  right: 5%;
+}

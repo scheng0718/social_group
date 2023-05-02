@@ -25,7 +25,7 @@ function renderPeopleList(data) {
                 <button type="button" class="btn btn-warning btn-show-more mx-2" data-bs-toggle="modal" data-bs-target="#friends-modal-message" data-id="${id}">
                   Learn More
                 </button> 
-                <button type="button" class="btn btn-danger btn-remove-friend mx-2" data-id="${id}">Remove</button>            
+                <button type="button" class="btn btn-danger btn-remove-friend mx-2" data-id="${id}">Unfollow</button>            
               </div>
             </div>
           </div>
