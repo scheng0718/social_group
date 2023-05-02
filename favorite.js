@@ -88,11 +88,20 @@ dataPanel.addEventListener('click', function onPanelCLicked(event) {
   }
 })
 // Get Country Code through API 
+// axios.get(COUNTRY_CODE)
+//   .then (response => {
+//     response.data.forEach(item => {
+//       const countryObject = {countryName: item.name.common, countryCode: item.cca2}
+//       countries.push(countryObject)
+//     }) 
+//     renderPeopleList(friends)
+//   })
+
 axios.get(COUNTRY_CODE)
-  .then (response => {
-    response.data.forEach(item => {
-      const countryObject = {countryName: item.name.common, countryCode: item.cca2}
-      countries.push(countryObject)
-    }) 
+  .then(response => {
+    countries = response.data.map(item => ({
+      countryName: item.name.common, 
+      countryCode: item.cca2
+    }))
     renderPeopleList(friends)
-  })
+})

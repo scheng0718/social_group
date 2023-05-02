@@ -181,11 +181,20 @@ axios.get(INDEX_URL)
     renderPeopleList(getFriendByPage(1))
 })
 // Country Code API
+// axios.get(COUNTRY_CODE)
+//   .then (response => {
+//     response.data.forEach(item => {
+//       const countryObject = {countryName: item.name.common, countryCode: item.cca2}
+//       countries.push(countryObject)
+//     }) 
+//     console.log(countries)
+//   })
+
 axios.get(COUNTRY_CODE)
-  .then (response => {
-    response.data.forEach(item => {
-      const countryObject = {countryName: item.name.common, countryCode: item.cca2}
-      countries.push(countryObject)
-    }) 
+  .then(response => {
+    countries = response.data.map(item => ({
+      countryName: item.name.common, 
+      countryCode: item.cca2
+    }))
     console.log(countries)
-  })
+})
