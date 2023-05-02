@@ -31,7 +31,9 @@ function renderPeopleList(data) {
           </div>
         </div>
     `
-    dataPanel.innerHTML = rawHTML
+    if (id !== 200) {
+      dataPanel.innerHTML = rawHTML
+    }
   })
 }
 function renderModalInfo(event) {

@@ -1,9 +1,33 @@
 const BASE_URL = 'https://user-list.alphacamp.io'
 const INDEX_URL = BASE_URL + '/api/v1/users/'
+const FRIENDS_PER_PAGE = 12
 const dataPanel = document.querySelector('#data-panel')
 const searchForm = document.querySelector('#search-form')
 const searchInput = document.querySelector('#search-input')
+const totalPage = document.querySelector('#total-page')
 const friends = []
+let filteredList = []
+
+function renderPagination(friends) {
+  const pages = Math.ceil(friends.length / FRIENDS_PER_PAGE)
+  // console.log(page)
+  let rawHTML = ''
+  for (let page = 1; page <= pages; page++) {
+    rawHTML += `
+      <li class="page-item"><a class="page-link" href="#" data-page="${page}">${page}</a></li>
+    `
+  }  
+  totalPage.innerHTML = rawHTML
+}
+// determine which data will be used, and filter data by page 
+function getFriendByPage(page) {
+  if (!page || page === 0) {
+    return
+  }
+  const data = filteredList.length ? filteredList : friends
+  const friendsByPage = data.slice((page - 1) * FRIENDS_PER_PAGE, page * FRIENDS_PER_PAGE)
+  return friendsByPage
+}
 
 // Render friends information
 function renderPeopleList(data) {
@@ -71,12 +95,13 @@ function addToFriend(id) {
 searchForm.addEventListener('submit', function searchFromSubmitted(event) {
   event.preventDefault();
   const input = searchInput.value.trim().toLowerCase()
-  const filteredList = friends.filter(friend => friend.name.toLowerCase().includes(input) || friend.surname.toLowerCase().includes(input))
+  filteredList = friends.filter(friend => friend.name.toLowerCase().includes(input) || friend.surname.toLowerCase().includes(input))
   if (filteredList.length === 0) {
     alert(`The friend ${input} is not existing`)
     renderPeopleList(friends)
   }
-  renderPeopleList(filteredList)  
+  renderPagination(filteredList)
+  renderPeopleList(getFriendByPage(1))  
 })
 
 dataPanel.addEventListener('click', function onPanelCLicked(event) {
@@ -87,11 +112,19 @@ dataPanel.addEventListener('click', function onPanelCLicked(event) {
   }  
 })
 
+totalPage.addEventListener('click', function (event) {
+  if (event.target.tagName !== 'A') {
+    return
+  }
+  const page = Number(event.target.innerText)
+  renderPeopleList(getFriendByPage(page))
+})
+
 // Get API data
 axios.get(INDEX_URL)
   .then(response => {
     const data = response.data.results
     friends.push(...data)
-    console.log(friends)
-    renderPeopleList(friends)
+    renderPagination(friends)
+    renderPeopleList(getFriendByPage(1))
 })
