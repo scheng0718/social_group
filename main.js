@@ -1,5 +1,6 @@
 const BASE_URL = 'https://user-list.alphacamp.io'
 const INDEX_URL = BASE_URL + '/api/v1/users/'
+const COUNTRY_CODE = 'https://restcountries.com/v3.1/all'
 const FRIENDS_PER_PAGE = 12
 const dataPanel = document.querySelector('#data-panel')
 const searchForm = document.querySelector('#search-form')
@@ -7,10 +8,10 @@ const searchInput = document.querySelector('#search-input')
 const totalPage = document.querySelector('#total-page')
 const friends = []
 let filteredList = []
-
+let countries = []
+// render pagination 
 function renderPagination(friends) {
   const pages = Math.ceil(friends.length / FRIENDS_PER_PAGE)
-  // console.log(page)
   let rawHTML = ''
   for (let page = 1; page <= pages; page++) {
     rawHTML += `
@@ -28,6 +29,7 @@ function getFriendByPage(page) {
   const friendsByPage = data.slice((page - 1) * FRIENDS_PER_PAGE, page * FRIENDS_PER_PAGE)
   return friendsByPage
 }
+// Check the data from localStorage 
 function isExistInFriendList(id) {
   const friendList = JSON.parse(localStorage.getItem('closeFriends')) || []
   const friend = friendList.find(friend => friend.id === id)
@@ -38,6 +40,13 @@ function renderPeopleList(data) {
   let rawHTML = ''
   data.forEach(item => {
     const id = Number(item.id)
+    const countryName = item.region
+    let countryCode
+    countries.find(country => {  
+      if (country.countryName === countryName) {
+        countryCode = country.countryCode.toLowerCase()
+      }  
+    })
     if (isExistInFriendList(id)) {
       rawHTML += `
         <div class="col-sm-3">
@@ -47,10 +56,9 @@ function renderPeopleList(data) {
                 <img src="${item.avatar}" class="card-img-top" alt="avatar">
                 <div class="card-body text-center">
                   <h5 class="card-title">${item.name}<br>${item.surname}</h5>
-                  <p class="card-subtitle"><i class="fa-solid fa-flag fa-sm mx-2" style="color: #008000;"></i>${item.region}</p>
-                  <p class="card-text"><i class="fa-solid fa-person-half-dress fa-lg mx-2" style="color: #f2c94c;"></i>${item.gender}</p>
+                  <h6 class="card-subtitle"><img class="flag-img" src="https://flagcdn.com/24x18/${countryCode}.png">${item.region}</h6>
                   <button type="button" class="btn btn-warning btn-show-more mx-2" data-bs-toggle="modal" data-bs-target="#friends-modal-message" data-id="${id}">
-                    About me
+                    About Me
                   </button> 
                   <button type="button" class="btn btn-light btn-add-friend mx-2" data-id="${id}">Follow</button>            
                 </div>
@@ -67,10 +75,9 @@ function renderPeopleList(data) {
                 <img src="${item.avatar}" class="card-img-top" alt="avatar">
                 <div class="card-body text-center">
                   <h5 class="card-title">${item.name}<br>${item.surname}</h5>
-                  <p class="card-subtitle"><i class="fa-solid fa-flag fa-sm mx-2" style="color: #008000;"></i>${item.region}</p>
-                  <p class="card-text"><i class="fa-solid fa-person-half-dress fa-lg mx-2" style="color: #f2c94c;"></i>${item.gender}</p>
+                  <h6 class="card-subtitle m-3"><img class="flag-img" src="https://flagcdn.com/24x18/${countryCode}.png">${item.region}</h6>
                   <button type="button" class="btn btn-warning btn-show-more mx-2" data-bs-toggle="modal" data-bs-target="#friends-modal-message" data-id="${id}">
-                    About me
+                    About Me
                   </button> 
                   <button type="button" class="btn btn-light btn-add-friend mx-2" data-id="${id}">Follow</button>            
                 </div>
@@ -79,12 +86,11 @@ function renderPeopleList(data) {
           </div>
       `
     }
-    
     dataPanel.innerHTML = rawHTML   
   })
 }
+// render about me info
 function renderModalInfo(event) {
-  // console.log(event.target)
   const id = event.target.dataset.id
   const showURL = INDEX_URL + id
   const modalImg = document.querySelector('#friends-modal-image')
@@ -107,8 +113,8 @@ function renderModalInfo(event) {
       `
     })
 }
+//Add to localStorage
 function addToFriend(id) {
-  // console.log(id)
   const friendList = JSON.parse(localStorage.getItem('closeFriends') || [])
   const closeFriend = friends.find(friend => friend.id === id)
   if (friendList.some(friend => friend.id === id)) {
@@ -117,6 +123,7 @@ function addToFriend(id) {
   friendList.push(closeFriend)
   localStorage.setItem('closeFriends', JSON.stringify(friendList))
 }
+// Remove from localStorage
 function removeFromList(id) {
   const friendList = JSON.parse(localStorage.getItem('closeFriends'))
   const index = friendList.findIndex(friend => friend.id === id)
@@ -135,7 +142,7 @@ searchForm.addEventListener('submit', function searchFromSubmitted(event) {
   renderPagination(filteredList)
   renderPeopleList(getFriendByPage(1))  
 })
-
+// data-panel click event
 dataPanel.addEventListener('click', function onPanelCLicked(event) {
   if (event.target.matches('.btn-show-more')) {
     renderModalInfo(event) 
@@ -152,7 +159,7 @@ dataPanel.addEventListener('click', function onPanelCLicked(event) {
     addToFriend(id)
   }
 })
-
+//Pagination click event
 totalPage.addEventListener('click', function (event) {
   if (event.target.tagName !== 'A') {
     return
@@ -161,7 +168,7 @@ totalPage.addEventListener('click', function (event) {
   renderPeopleList(getFriendByPage(page))
 })
 
-// Get API data
+// Get images and info through API
 axios.get(INDEX_URL)
   .then(response => {
     const data = response.data.results
@@ -169,3 +176,12 @@ axios.get(INDEX_URL)
     renderPagination(friends)
     renderPeopleList(getFriendByPage(1))
 })
+// Country Code API
+axios.get(COUNTRY_CODE)
+  .then (response => {
+    response.data.forEach(item => {
+      const countryObject = {countryName: item.name.common, countryCode: item.cca2}
+      countries.push(countryObject)
+    }) 
+    console.log(countries)
+  })

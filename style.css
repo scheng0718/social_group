@@ -27,3 +27,6 @@ body {
 .card:hover {
   box-shadow: 10px 0px 8px rgba(128, 128, 128, 1);
 }
+.flag-img {
+  margin-right: 10px;
+}
