@@ -116,7 +116,7 @@ function renderModalInfo(event) {
 }
 //Add to localStorage
 function addToFriend(id) {
-  const friendList = JSON.parse(localStorage.getItem('closeFriends') || [])
+  const friendList = JSON.parse(localStorage.getItem('closeFriends')) || []
   const closeFriend = friends.find(friend => friend.id === id)
   if (friendList.some(friend => friend.id === id)) {
     return alert('This friend has been added already')
